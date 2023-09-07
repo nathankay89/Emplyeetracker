@@ -1,54 +1,73 @@
+// loads required modules
 const inquirer = require('inquirer');
-const queries = require('./queries');
+const mysql = require('mysql2');
 
-async function mainMenu() {
-  const { choice } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'choice',
-      message: 'Select an option:',
-      choices: [
-        'View All Departments',
-        'View All Roles',
-        'View All Employees',
-        'Add a Department', // Add this option
-        'Add a Role',
-        'Add an Employee',
-        'Update an Employee Role',
-        'Exit'
-      ]
-    }
-  ]);
+// creates new databse connection
+const connection = mysql.createConnection({
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: 'Memphisnov04',
+  database: 'employee_management'
+});
+// connection status
+connection.connect(err => {
+  if (err) throw err;
+  console.log('Connected to MySQL database');
+});
 
-  switch (choice) {
-    case 'Add a Department':
-      await addDepartment(); // Call the function to add department
-      break;
-    // ... other cases ...
-    case 'Exit':
-      console.log('Exiting...');
-      connection.end();
-      break;
-  }
+function startApp() {
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'choice',
+        message: 'Please select an option:',
+        choices: [
+          'View all departments',
+          'View all roles',
+          'View all employees',
+          'Add a department',
+          'Add a role',
+          'Add an employee',
+          'Update an employee role',
+          'Exit'
+        ]
+      }
+    ])
+    .then(answers => {
+      switch (answers.choice) {
+        case 'View all departments':
+          viewAllDepartments();
+          break;
+        case 'View all roles':
+          viewAllRoles();
+          break;
+        case 'View all employees':
+          viewAllEmployees();
+          break;
+        case 'Add a department':
+          addDepartment();
+          break;
+        case 'Add a role':
+          addRole();
+          break;
+        case 'Add an employee':
+          addEmployee();
+          break;
+        case 'Update an employee role':
+          updateEmployeeRole();
+          break;
+       
+        case 'Exit':
+          connection.end();
+          console.log('Goodbye!');
+          process.exit();
+          break;
+      }
+    });
 }
 
-async function addDepartment() {
-  const departmentName = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'name',
-      message: 'Enter the name of the department:'
-    }
-  ]);
+// Finally, start the application
+startApp();
 
-  try {
-    await queries.addDepartment(departmentName.name);
-    console.log('Department added successfully.');
-  } catch (error) {
-    console.error('Error adding department:', error);
-  }
-
-  mainMenu(); // Go back to the main menu
-}
-
-mainMenu(); // Start the application
